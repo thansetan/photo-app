@@ -1,0 +1,448 @@
+basePath: /api/v1
+definitions:
+  dtos.CreatePhotoResponse:
+    properties:
+      photo_id:
+        type: string
+    type: object
+  dtos.LoginResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  dtos.PhotoResponse:
+    properties:
+      caption:
+        type: string
+      owner:
+        $ref: '#/definitions/dtos.UserResponse'
+      photo_id:
+        type: string
+      photo_path:
+        type: string
+      title:
+        type: string
+    type: object
+  dtos.RegisterResponse:
+    properties:
+      user_id:
+        type: string
+    type: object
+  dtos.UpdatePhotoRequest:
+    properties:
+      caption:
+        example: A very cool photo of me
+        type: string
+      is_private:
+        type: boolean
+      title:
+        example: I'm very cool
+        type: string
+    type: object
+  dtos.UserLogin:
+    properties:
+      email:
+        example: johndoe@mail.com
+        type: string
+      password:
+        example: JohnDoe123
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dtos.UserRegister:
+    properties:
+      email:
+        example: johndoe@mail.com
+        type: string
+      password:
+        example: JohnDoe123
+        minLength: 6
+        type: string
+      username:
+        example: johndoe
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  dtos.UserResponse:
+    properties:
+      username:
+        type: string
+    type: object
+  dtos.UserUpdateRequest:
+    properties:
+      email:
+        example: johndoe@mail.org
+        type: string
+      new_password:
+        minLength: 6
+        type: string
+      password:
+        example: JohnDoe123
+        minLength: 6
+        type: string
+      username:
+        example: johndoe123
+        type: string
+    required:
+    - password
+    type: object
+  helpers.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  helpers.PhotosResponse:
+    properties:
+      photos:
+        items:
+          $ref: '#/definitions/dtos.PhotoResponse'
+        type: array
+    type: object
+info:
+  contact: {}
+  title: Photo App
+paths:
+  /photos:
+    get:
+      description: get all public photos
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helpers.PhotosResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+      summary: get all public photos
+      tags:
+      - Photos
+    post:
+      description: add photo for current user
+      parameters:
+      - example: A cool photo of me
+        in: formData
+        name: caption
+        type: string
+      - in: formData
+        name: is_private
+        type: boolean
+      - example: I'm cool
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: the picture file
+        in: formData
+        name: photo
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dtos.CreatePhotoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: add photo
+      tags:
+      - Photos
+  /photos/{id}:
+    delete:
+      description: delete a photo by given ID
+      parameters:
+      - description: photo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: delete photo
+      tags:
+      - Photos
+    put:
+      consumes:
+      - application/json
+      description: update data of a photo by given ID
+      parameters:
+      - description: photo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: data required to update a photo
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UpdatePhotoRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: update data of a photo
+      tags:
+      - Photos
+  /photos/by/{username}:
+    get:
+      description: get all public photo owned by specified user by providing their
+        username
+      parameters:
+      - description: owner's username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helpers.PhotosResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+      summary: get all public photo owned by a user
+      tags:
+      - Photos
+  /photos/my:
+    get:
+      description: get all available photos of current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helpers.PhotosResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: get all photos of current user
+      tags:
+      - Photos
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      description: login user. returns JWT
+      parameters:
+      - description: data required to login
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UserLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+      summary: user login
+      tags:
+      - Users
+  /users/me:
+    delete:
+      description: delete user data and all photos related to this user
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: delete update
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: update user data
+      parameters:
+      - description: data required to update user data
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UserUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: user update
+      tags:
+      - Users
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      description: create a new user account
+      parameters:
+      - description: data required to create a new user
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UserRegister'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dtos.RegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+      summary: user register
+      tags:
+      - Users
+securityDefinitions:
+  Bearer:
+    description: 'JWT Bearer Token. Format: "Bearer <your-token-here>"'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
